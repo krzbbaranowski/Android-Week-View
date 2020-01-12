@@ -34,7 +34,7 @@ internal class DefaultDateTimeInterpreter(
     }
 
     override fun interpretTime(hour: Int): String {
-        val time = calendar.withTime(hour, minutes = 0)
+        val time = calendar.setTime(hour = hour, minutes = 0)
         return sdfTime.format(time.time)
     }
 }

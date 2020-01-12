@@ -38,6 +38,7 @@ internal class EventsDiffer<T>(
     ) {
         backgroundExecutor.execute {
             val dateRange = drawingContext.dateRange
+
             // It's possible that weekView.submit() is called before the date range has been
             // initialized. Therefor, waiting until the date range is actually set may be required.
             while (dateRange.isEmpty()) {
@@ -57,12 +58,12 @@ internal class EventsDiffer<T>(
         dateRange: List<Calendar>
     ): Boolean {
         val events = items.map { it.toWeekViewEvent() }
-        val startDate = events.map { it.startTime.atStartOfDay }.min()
-        val endDate = events.map { it.startTime.atEndOfDay }.max()
+        val minTimestamp = events.map { it.startTime.millisAtStartOfDay }.min()
+        val maxTimestamp = events.map { it.startTime.millisAtStartOfDay }.max()
 
         val eventsCache = eventsCacheWrapper.get()
 
-        if (startDate == null || endDate == null) {
+        if (minTimestamp == null || maxTimestamp == null) {
             // If these are null, this would indicate that the submitted list of events is empty.
             // The new items are empty, but it's possible that WeekView is currently displaying
             // events.
@@ -77,7 +78,9 @@ internal class EventsDiffer<T>(
         }
 
         eventChipsLoader.createAndCacheEventChips(events)
-        return dateRange.any { it.isBetween(startDate, endDate, inclusive = true) }
+
+        val timestampRange = minTimestamp..maxTimestamp
+        return dateRange.any { it.timeInMillis in timestampRange }
     }
 
     private fun mapEventsToPeriod(

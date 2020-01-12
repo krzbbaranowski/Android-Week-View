@@ -6,7 +6,7 @@ internal class EventChipsExpander<T>(
 ) {
 
     fun calculateEventChipPositions() {
-        val groups = chipCache.groupedByDate()
+        val groups = chipCache.groupedByDate() // TODO Method necessary
         val groupEventChips = groups.values
 
         for (eventChips in groupEventChips) {

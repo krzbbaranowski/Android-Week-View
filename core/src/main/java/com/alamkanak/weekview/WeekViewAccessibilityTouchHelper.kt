@@ -38,7 +38,7 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
 
         // If no event chip was hit, we still want to inform the user what date they
         // just interacted with
-        val date = touchHandler.calculateTimeFromPoint(x, y)?.atStartOfDay
+        val date = touchHandler.calculateTimeFromPoint(x, y)?.millisAtStartOfDay
         val dateVirtualViewId = date?.let { store[it] }
         if (dateVirtualViewId != null) {
             return dateVirtualViewId
@@ -181,7 +181,7 @@ internal class WeekViewAccessibilityTouchHelper<T : Any>(
 private class VirtualViewIdStore<T> {
 
     private val eventChips = mutableListOf<EventChip<T>>()
-    private val dates = mutableListOf<Calendar>()
+    private val dates = mutableListOf<Timestamp>()
 
     private val eventChipVirtualViewIds = mutableListOf<Int>()
     private val dateVirtualViewIds = mutableListOf<Int>()
@@ -193,33 +193,37 @@ private class VirtualViewIdStore<T> {
         return eventChipVirtualViewIds[index]
     }
 
-    operator fun get(date: Calendar): Int? {
-        val index = dates.indexOf(date)
+    operator fun get(timestamp: Long): Int? {
+        val index = dates.indexOfFirst { it.value == timestamp }
         return dateVirtualViewIds[index]
     }
 
     fun findEventChip(
         virtualViewId: Int
     ): EventChip<T>? {
-        val index = eventChipVirtualViewIds.indexOfFirst { it == virtualViewId }
-        return if (index != -1) eventChips[index] else null
+        val index = eventChipVirtualViewIds
+            .indexOfFirst { it == virtualViewId }
+            .takeIf { it != -1 }
+        return index?.let { eventChips[it] }
     }
 
     fun findDate(
         virtualViewId: Int
     ): Calendar? {
-        val index = dateVirtualViewIds.indexOfFirst { it == virtualViewId }
-        return if (index != -1) dates[index] else null
+        val index = dateVirtualViewIds
+            .indexOfFirst { it == virtualViewId }
+            .takeIf { it != -1 }
+        return index?.let { dates[it].toCalendar() }
     }
 
     fun put(date: Calendar): Int {
-        val startOfDay = date.atStartOfDay
-        val index = dates.indexOf(startOfDay)
+        val startOfDay = date.millisAtStartOfDay
+        val index = dates.indexOfFirst { it.value == startOfDay }
 
         return if (index != -1) {
             dateVirtualViewIds[index]
         } else {
-            dates += date
+            dates += Timestamp(startOfDay)
             dateVirtualViewIds += maximumId
             maximumId++
         }

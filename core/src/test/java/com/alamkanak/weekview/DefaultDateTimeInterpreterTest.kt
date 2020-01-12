@@ -2,17 +2,26 @@ package com.alamkanak.weekview
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.util.Calendar
 
 class DefaultDateTimeInterpreterTest {
 
-    private val date = firstDayOfYear().withHour(1)
+    private val date = Calendar.getInstance().apply {
+        set(Calendar.MONTH, Calendar.JANUARY)
+        set(Calendar.DAY_OF_MONTH, 1)
+        set(Calendar.YEAR, 2020)
+        set(Calendar.HOUR_OF_DAY, 1)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
 
     @Test
     fun `correct date when in day view`() {
         val dateFormatProvider = FakeDateFormatProvider()
         val underTest = DefaultDateTimeInterpreter(dateFormatProvider, numberOfDays = 1)
 
-        val expected = "TUESDAY 1/01"
+        val expected = "WEDNESDAY 1/01"
         val observed = underTest.interpretDate(date)
 
         assertEquals(expected, observed)
@@ -23,7 +32,7 @@ class DefaultDateTimeInterpreterTest {
         val dateFormatProvider = FakeDateFormatProvider()
         val underTest = DefaultDateTimeInterpreter(dateFormatProvider, numberOfDays = 3)
 
-        val expected = "TUE 1/01"
+        val expected = "WED 1/01"
         val observed = underTest.interpretDate(date)
 
         assertEquals(expected, observed)

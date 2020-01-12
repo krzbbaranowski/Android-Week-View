@@ -22,8 +22,8 @@ internal class SingleEventsDrawer<T>(
         date: Calendar,
         canvas: Canvas
     ) {
-        chipCache
-            .normalEventChipsByDate(date)
+        val eventChips = chipCache.normalEventChipsByDate(date)
+        eventChips
             .filter { it.bounds != null }
             .forEach { eventChipDrawer.draw(it, canvas) }
     }

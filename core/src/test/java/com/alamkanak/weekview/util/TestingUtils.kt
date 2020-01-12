@@ -11,3 +11,13 @@ internal fun createDate(
     set(Calendar.MONTH, month)
     set(Calendar.DAY_OF_MONTH, dayOfMonth)
 }
+
+internal fun Calendar.setHour(hour: Int): Calendar {
+    set(Calendar.HOUR_OF_DAY, hour)
+    return this
+}
+
+internal fun Calendar.setMinutes(minute: Int): Calendar {
+    set(Calendar.MINUTE, minute)
+    return this
+}

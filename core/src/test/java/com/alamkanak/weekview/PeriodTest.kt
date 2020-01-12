@@ -17,7 +17,7 @@ class PeriodTest {
 
     @Test
     fun `returns correct previous period for August`() {
-        val date = firstDayOfYear().withMonth(Calendar.AUGUST)
+        val date = firstDayOfYear().setMonth(Calendar.AUGUST)
         val period = Period.fromDate(date)
         val previous = period.previous
 
@@ -27,7 +27,7 @@ class PeriodTest {
 
     @Test
     fun `returns correct next period for August`() {
-        val date = firstDayOfYear().withMonth(Calendar.AUGUST)
+        val date = firstDayOfYear().setMonth(Calendar.AUGUST)
         val period = Period.fromDate(date)
         val next = period.next
 
@@ -37,11 +37,16 @@ class PeriodTest {
 
     @Test
     fun `returns correct next period for December`() {
-        val date = firstDayOfYear().withMonth(Calendar.DECEMBER)
+        val date = firstDayOfYear().setMonth(Calendar.DECEMBER)
         val period = Period.fromDate(date)
         val next = period.next
 
         assertEquals(next.month, Calendar.JANUARY)
         assertEquals(next.year, period.year + 1)
     }
+}
+
+private fun Calendar.setMonth(month: Int): Calendar {
+    set(Calendar.MONTH, month)
+    return this
 }

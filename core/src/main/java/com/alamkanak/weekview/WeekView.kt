@@ -182,19 +182,16 @@ class WeekView<T : Any> @JvmOverloads constructor(
         val daysScrolled = configWrapper.currentOrigin.x / totalDayWidth
         val delta = daysScrolled.roundToInt() * (-1)
 
-        val firstVisibleDate = today().plusDays(delta)
-        val lastVisibleDate = firstVisibleDate.plusDays(visibleDays - 1)
-
+        val firstVisibleDate = today() + Days(delta)
         viewState.firstVisibleDate = firstVisibleDate
-        viewState.lastVisibleDate = lastVisibleDate
 
-        val hasFirstVisibleDayChanged = oldFirstVisibleDay?.let {
-            firstVisibleDate.isSameDate(it).not()
-        } ?: true
-
+        val hasFirstVisibleDayChanged = oldFirstVisibleDay?.isNotSameDate(firstVisibleDate) ?: true
         if (hasFirstVisibleDayChanged) {
             scrollListener?.onFirstVisibleDateChanged(firstVisibleDate)
-            onRangeChangeListener?.onRangeChanged(firstVisibleDate, lastVisibleDate)
+            onRangeChangeListener?.let { listener ->
+                val lastVisibleDate = firstVisibleDate + Days(visibleDays - 1)
+                listener.onRangeChanged(firstVisibleDate, lastVisibleDate)
+            }
         }
     }
 
@@ -922,7 +919,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         get() = configWrapper.minDate?.copy()
         set(value) {
             val maxDate = configWrapper.maxDate
-            if (maxDate != null && value != null && value.isAfter(maxDate)) {
+            if (maxDate != null && value != null && value > maxDate) {
                 throw IllegalArgumentException("Can't set a minDate that's after maxDate")
             }
 
@@ -938,7 +935,7 @@ class WeekView<T : Any> @JvmOverloads constructor(
         get() = configWrapper.maxDate?.copy()
         set(value) {
             val minDate = configWrapper.minDate
-            if (minDate != null && value != null && value.isBefore(minDate)) {
+            if (minDate != null && value != null && value < minDate) {
                 throw IllegalArgumentException("Can't set a maxDate that's before minDate")
             }
 
@@ -1060,7 +1057,11 @@ class WeekView<T : Any> @JvmOverloads constructor(
      * Returns the last visible date.
      */
     val lastVisibleDate: Calendar?
-        get() = viewState.lastVisibleDate?.copy()
+        get() {
+            val firstVisibleDate = viewState.firstVisibleDate
+            val delta = configWrapper.numberOfVisibleDays - 1
+            return firstVisibleDate?.let { it + Days(delta) }
+        }
 
     /**
      * Shows the current date.

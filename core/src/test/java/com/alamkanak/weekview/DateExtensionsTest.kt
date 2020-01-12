@@ -8,7 +8,7 @@ class DateExtensionsTest {
 
     @Test
     fun `returns correct day of week`() {
-        val date = firstDayOfYear().withYear(2019)
+        val date = firstDayOfYear().setYear(2019)
         val expected = Calendar.TUESDAY
         val result = date.dayOfWeek
         assertEquals(expected, result)
@@ -16,22 +16,27 @@ class DateExtensionsTest {
 
     @Test
     fun `does correct equality check`() {
-        val first = firstDayOfYear().withYear(2019)
-        val second = firstDayOfYear().withYear(2019)
-        assert(first.isEqual(second))
+        val first = firstDayOfYear().setYear(2019)
+        val second = firstDayOfYear().setYear(2019)
+        assert(first == second)
 
-        val newSecond = second.plusMillis(1)
-        assert(first.isNotEqual(newSecond))
+        val newSecond = second - Millis(1)
+        assert(first != newSecond)
     }
 
     @Test
     fun `adds days correctly`() {
-        val date = firstDayOfYear().withYear(2019)
-        val result = date.plusDays(2)
+        val date = firstDayOfYear().setYear(2019)
+        val result = date + Days(2)
         assertEquals(3, result.dayOfMonth)
 
-        val secondResult = date.plusDays(31)
+        val secondResult = date + Days(31)
         assertEquals(1, secondResult.dayOfMonth)
         assertEquals(Calendar.FEBRUARY, secondResult.month)
     }
+}
+
+private fun Calendar.setYear(year: Int): Calendar {
+    set(Calendar.YEAR, year)
+    return this
 }

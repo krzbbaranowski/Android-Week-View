@@ -11,8 +11,8 @@ internal class EventChipCache<T> {
     private val normalEventChipsByDate = ConcurrentHashMap<Long, MutableList<EventChip<T>>>()
     private val allDayEventChipsByDate = ConcurrentHashMap<Long, MutableList<EventChip<T>>>()
 
-    fun groupedByDate(): Map<Calendar, List<EventChip<T>>> {
-        return allEventChips.groupBy { it.event.startTime.atStartOfDay }
+    fun groupedByDate(): Map<Long, List<EventChip<T>>> {
+        return allEventChips.groupBy { it.event.startTime.millisAtStartOfDay }
     }
 
     fun allEventChipsInDateRange(
@@ -20,33 +20,33 @@ internal class EventChipCache<T> {
     ): List<EventChip<T>> {
         val results = mutableListOf<EventChip<T>>()
         for (date in dateRange) {
-            results += allDayEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
-            results += normalEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
+            results += allDayEventChipsByDate[date.millisAtStartOfDay].orEmpty()
+            results += normalEventChipsByDate[date.millisAtStartOfDay].orEmpty()
         }
         return results
     }
 
     fun normalEventChipsByDate(
         date: Calendar
-    ): List<EventChip<T>> = normalEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
+    ): List<EventChip<T>> = normalEventChipsByDate[date.millisAtStartOfDay].orEmpty()
 
     fun allDayEventChipsByDate(
         date: Calendar
-    ): List<EventChip<T>> = allDayEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
+    ): List<EventChip<T>> = allDayEventChipsByDate[date.millisAtStartOfDay].orEmpty()
 
     fun allDayEventChipsInDateRange(
         dateRange: List<Calendar>
     ): List<EventChip<T>> {
         val results = mutableListOf<EventChip<T>>()
         for (date in dateRange) {
-            results += allDayEventChipsByDate[date.atStartOfDay.timeInMillis].orEmpty()
+            results += allDayEventChipsByDate[date.millisAtStartOfDay].orEmpty()
         }
         return results
     }
 
     private fun put(newChips: List<EventChip<T>>) {
         for (eventChip in newChips) {
-            val key = eventChip.event.startTime.atStartOfDay.timeInMillis
+            val key = eventChip.event.startTime.millisAtStartOfDay
             if (eventChip.event.isAllDay) {
                 allDayEventChipsByDate.addOrReplace(key, eventChip)
             } else {

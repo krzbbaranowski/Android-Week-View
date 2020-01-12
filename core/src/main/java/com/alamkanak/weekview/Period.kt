@@ -41,7 +41,7 @@ internal data class Period(
         }
 
     val startDate: Calendar = newDate(year, month, dayOfMonth = 1)
-    val endDate: Calendar = startDate.withDayOfMonth(startDate.lengthOfMonth).atEndOfDay
+    val endDate: Calendar = startDate.copy { atEndOfMonth() }
 
     override fun compareTo(other: Period): Int {
         return when {

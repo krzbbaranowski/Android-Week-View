@@ -229,7 +229,7 @@ internal class WeekViewConfigWrapper(
     val minX: Float
         get() {
             return maxDate?.let {
-                val date = it.minusDays(numberOfVisibleDays - 1)
+                val date = it - Days(numberOfVisibleDays - 1)
                 getXOriginForDate(date)
             } ?: Float.NEGATIVE_INFINITY
         }
@@ -514,7 +514,7 @@ internal class WeekViewConfigWrapper(
     }
 
     private fun getXOriginForDate(date: Calendar): Float {
-        return -1f * date.daysFromToday * totalDayWidth
+        return date.daysFromToday * totalDayWidth * -1f
     }
 
     fun updateAllDayEventHeight(height: Int) {
@@ -535,7 +535,7 @@ internal class WeekViewConfigWrapper(
         }
 
         if (showCurrentTimeFirst) {
-            computeDifferenceWithCurrentTime(view)
+            computeDifferenceWithCurrentTime()
         }
 
         // Overwrites the origin when today is out of date range
@@ -543,18 +543,18 @@ internal class WeekViewConfigWrapper(
         currentOrigin.x = max(currentOrigin.x, minX)
     }
 
-    private fun computeDifferenceWithCurrentTime(view: WeekView<*>) {
-        val now = now()
-
-        val desired = if (now.hour > 0) {
-            // Add some padding above the current time (and thus: the now line)
-            now.minusHours(1)
+    // TODO Naming; also: return a value and only then set currentOrigin.y
+    private fun computeDifferenceWithCurrentTime() {
+        val desired = now()
+        if (desired.hour >= 1) {
+            desired -= Hours(1)
         } else {
-            now.atStartOfDay
+            desired.atStartOfDay()
         }
 
         val hour = desired.hour
         val minutes = desired.minute
+
         val fraction = minutes.toFloat() / Constants.MINUTES_PER_HOUR
 
         var verticalOffset = hourHeight * (hour + fraction)
@@ -574,13 +574,14 @@ internal class WeekViewConfigWrapper(
         val minDate = minDate ?: date
         val maxDate = maxDate ?: date
 
-        return if (date.isBefore(minDate)) {
+        return if (date < minDate) {
             minDate
-        } else if (date.isAfter(maxDate)) {
-            maxDate.plusDays(1 - numberOfVisibleDays)
+        } else if (date > maxDate) {
+            val diff = 1 - numberOfVisibleDays
+            maxDate + Days(diff)
         } else if (numberOfVisibleDays >= 7 && showFirstDayOfWeekFirst) {
             val diff = computeDifferenceWithFirstDayOfWeek(date)
-            date.minusDays(diff)
+            date - Days(diff)
         } else {
             date
         }

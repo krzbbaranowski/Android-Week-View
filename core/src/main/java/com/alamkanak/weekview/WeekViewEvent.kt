@@ -22,6 +22,12 @@ data class WeekViewEvent<T> internal constructor(
     var data: T? = null
 ) : WeekViewDisplayable<T>, Comparable<WeekViewEvent<T>> {
 
+    internal val title: CharSequence?
+        get() = (titleResource as? TextResource.Value)?.text
+
+    internal val location: CharSequence?
+        get() = (locationResource as? TextResource.Value)?.text
+
     internal val isNotAllDay: Boolean
         get() = isAllDay.not()
 
@@ -29,7 +35,7 @@ data class WeekViewEvent<T> internal constructor(
         get() = ((endTime.timeInMillis - startTime.timeInMillis).toFloat() / 60_000).roundToInt()
 
     internal val isMultiDay: Boolean
-        get() = startTime.isSameDate(endTime).not()
+        get() = startTime.isNotSameDate(endTime)
 
     internal fun isWithin(minHour: Int, maxHour: Int): Boolean {
         return startTime.hour >= minHour && endTime.hour <= maxHour
@@ -63,28 +69,28 @@ data class WeekViewEvent<T> internal constructor(
             return false
         }
 
-        if (startTime.isEqual(other.startTime) && endTime.isEqual(other.endTime)) {
+        if (startTime == other.startTime && endTime == other.endTime) {
             // Complete overlap
             return true
         }
 
         // Resolve collisions by shortening the preceding event by 1 ms
-        if (endTime.isEqual(other.startTime)) {
-            endTime = endTime.minusMillis(1)
+        if (endTime == other.startTime) {
+            endTime.minusAssign(Millis(1))
             return false
-        } else if (startTime.isEqual(other.endTime)) {
-            other.endTime = other.endTime.minusMillis(1)
+        } else if (startTime == other.endTime) {
+            other.endTime.minusAssign(Millis(1))
         }
 
-        return !startTime.isAfter(other.endTime) && !endTime.isBefore(other.startTime)
+        return startTime <= other.endTime && endTime >= other.startTime
     }
 
     internal fun startsOnEarlierDay(originalEvent: WeekViewEvent<T>): Boolean {
-        return startTime.isNotEqual(originalEvent.startTime)
+        return startTime != originalEvent.startTime
     }
 
     internal fun endsOnLaterDay(originalEvent: WeekViewEvent<T>): Boolean {
-        return endTime.isNotEqual(originalEvent.endTime)
+        return endTime != originalEvent.endTime
     }
 
     override fun compareTo(other: WeekViewEvent<T>): Int {
@@ -213,12 +219,12 @@ data class WeekViewEvent<T> internal constructor(
         }
 
         fun setStartTime(startTime: Calendar): Builder<T> {
-            event.startTime = startTime
+            event.startTime = startTime // TODO .copy()
             return this
         }
 
         fun setEndTime(endTime: Calendar): Builder<T> {
-            event.endTime = endTime
+            event.endTime = endTime // TODO .copy()
             return this
         }
 
