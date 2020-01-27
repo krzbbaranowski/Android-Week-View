@@ -4,7 +4,7 @@ buildscript {
     ext {
         buildConfig = [
                 minSdk: 15,
-                minSdkJsr310: 26,
+                minSdkJsr310: 23,
                 compileSdk: 29,
                 targetSdk: 29
         ]
